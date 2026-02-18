@@ -1,33 +1,36 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Contract Drafting PoC</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Contract Drafting PoC</title>
 
-  <!-- Office.js MUST be loaded as a script -->
-  <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
+  <!-- Office.js from Microsoft CDN (supported approach) -->
+  <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
 
-  <style>
-    body { font-family: Arial, sans-serif; margin: 12px; }
-    .banner { padding: 10px; border-radius: 6px; background: #f4f4f4; margin-bottom: 12px; }
-    .small { font-size: 12px; color: #666; }
-    .ok { color: #0b6a0b; font-weight: 600; }
-    .warn { color: #9a6b00; font-weight: 600; }
-    .err { color: #b00020; font-weight: 600; }
-    button { width: 100%; padding: 10px; font-size: 14px; cursor: pointer; margin-top: 10px; }
-  </style>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 12px; }
+    .banner { padding: 10px; border-radius: 6px; background: #f4f4f4; margin-bottom: 12px; }
+    .small { font-size: 12px; color: #666; }
+    .ok { color: #0b6a0b; font-weight: 600; }
+    .warn { color: #9a6b00; font-weight: 600; }
+    .err { color: #b00020; font-weight: 600; }
+    button { width: 100%; padding: 10px; font-size: 14px; cursor: pointer; margin-top: 10px; }
+    button:disabled { opacity: 0.6; cursor: not-allowed; }
+  </style>
 </head>
 
 <body>
-  <div class="banner">
-    <div id="status" class="small">Loading…</div>
-    <div id="status2" class="small"></div>
-  </div>
+  <h3 style="margin:0 0 10px 0;">Contract Drafting PoC</h3>
 
-  <button id="btnValidate">Validate (debug)</button>
+  <div class="banner" role="status" aria-live="polite" aria-atomic="true">
+    <div id="status" class="small">Loading…</div>
+    <div id="status2" class="small"></div>
+  </div>
 
-  <!-- Load your add-in logic -->
+  <button id="btnValidate" disabled>Validate (debug)</button>
+
+  <!-- Load your add-in logic -->
   <script src="./taskpane.js?v=1"></script>
 </body>
 </html>

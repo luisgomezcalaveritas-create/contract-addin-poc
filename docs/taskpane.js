@@ -2,6 +2,10 @@
   const CLAUSE_INDEX_URL =
     "https://luisgomezcalaveritas-create.github.io/contract-addin-poc/clauses.json";
 
+  // Read BUILD_VERSION from HTML (single source-of-truth in taskpane.html).
+  const BUILD_VERSION = (window.BUILD_VERSION || "dev");
+  console.log("Contract PoC build:", BUILD_VERSION);
+
   // OpenXML highlight values (lowercase) – safest across Word on the web.
   const HIGHLIGHT = {
     RED: "red",
@@ -43,12 +47,16 @@
 
   // Badge variants: neutral | positive | info | notice | negative
   function setBadge(label, variant, text) {
+    const labelWithBuild = label ? `${label}` : "";
     if (elBadge) {
-      elBadge.textContent = label || "";
+      elBadge.textContent = labelWithBuild;
       elBadge.className = `badge badge--${variant || "neutral"}`;
     }
-    set2(text || "", "small status2");
-    console.log("[badge]", { label, variant, text });
+    // Always show build in the detail line for easy cache diagnosis
+    const buildSuffix = `Build ${BUILD_VERSION}`;
+    const combined = text ? `${text} • ${buildSuffix}` : buildSuffix;
+    set2(combined, "small status2");
+    console.log("[badge]", { label, variant, text, build: BUILD_VERSION });
   }
 
   function logOfficeError(prefix, e) {
@@ -244,7 +252,6 @@
     }
 
     try {
-      // Ensure Track Changes stays ON even if user toggled it off. [3](https://codesandbox.io/examples/package/office-addin-taskpane-js)[4](https://github.com/OfficeDev/Office-Add-in-samples/blob/main/Samples/hello-world/word-hello-world/taskpane.html)
       await ensureTrackAllEnabled();
       setBadge("Inserting", "info", `Inserting ${c.clauseId}…`);
 
@@ -271,7 +278,7 @@
       });
 
       set1(`Inserted ${c.clauseId} ✅`, "ok");
-      setBadge("Track Changes ON", "positive", "Inserted. Edit text (tracked), then Validate to mark only inserted/changed text Yellow.");
+      setBadge("Track Changes ON", "positive", "Inserted. Edit text (tracked), then Validate.");
     } catch (e) {
       const msg = logOfficeError("Insert failed", e);
       set1("Insert failed ❌", "err");
@@ -285,9 +292,8 @@
   async function validateDocument() {
     try {
       set1("Validating…", "ok");
-      setBadge("Validating", "info", "Green baseline + Yellow tracked insertions (deletions left as tracked deletions)…");
+      setBadge("Validating", "info", "Green baseline + Yellow tracked insertions…");
 
-      // Ensure Track Changes ON. [3](https://codesandbox.io/examples/package/office-addin-taskpane-js)[4](https://github.com/OfficeDev/Office-Add-in-samples/blob/main/Samples/hello-world/word-hello-world/taskpane.html)
       await ensureTrackAllEnabled();
 
       // Tracked changes APIs are WordApi 1.6+. [5](https://docs.github.com/en/get-started/start-your-journey/creating-an-account-on-github)[3](https://codesandbox.io/examples/package/office-addin-taskpane-js)
@@ -297,7 +303,7 @@
         return;
       }
 
-      // PASS 1: paint body red, load CC tags + text + insertion change counts
+      // PASS 1: paint body red; capture tag/text + insertionCount per standard block
       const snapshot = await Word.run(async (context) => {
         context.document.body.getRange().font.highlightColor = HIGHLIGHT.RED;
 
@@ -313,7 +319,6 @@
           const range = cc.getRange();
           range.load("text");
 
-          // Get tracked changes inside this range and load their types. [5](https://docs.github.com/en/get-started/start-your-journey/creating-an-account-on-github)[3](https://codesandbox.io/examples/package/office-addin-taskpane-js)
           const tcs = range.getTrackedChanges();
           tcs.load("items/type");
 
@@ -327,15 +332,11 @@
             .filter(tc => String(tc.type || "").toLowerCase().includes("insertion"))
             .length;
 
-          return {
-            tag: r.tag,
-            text: r.range.text || "",
-            insertionCount
-          };
+          return { tag: r.tag, text: r.range.text || "", insertionCount };
         });
       });
 
-      // PASS 1.5: compute baseline hash matches and fallback needs outside Word.run
+      // PASS 1.5: compute hash decisions outside Word.run
       const decisionsByTag = new Map();
       let okCount = 0;
       let changedCount = 0;
@@ -349,52 +350,49 @@
         if (isMatch) okCount++;
         else changedCount++;
 
-        // Fallback rule: if changed but no insertion revisions exist, likely accepted changes.
         const needsFallbackYellow = (!isMatch && item.insertionCount === 0);
         if (needsFallbackYellow) fallbackCount++;
 
         decisionsByTag.set(item.tag, {
-          isMatch,
           insertionCount: item.insertionCount,
           needsFallbackYellow
         });
       }
 
-      // PASS 2: apply GREEN base, overlay YELLOW only on insertions; fallback blocks YELLOW
+      // PASS 2: apply base colors + overlay insertion ranges
       await Word.run(async (context) => {
         const controls = context.document.contentControls;
         controls.load("items/tag");
         await context.sync();
 
+        // First apply base highlight and queue tracked changes loads for those needing overlay
+        const overlayBuckets = [];
         for (const cc of controls.items) {
           const tag = cc.tag || "";
           if (!tag.startsWith("TEMPLATE|") && !tag.startsWith("APPROVED|")) continue;
 
-          const decision = decisionsByTag.get(tag);
+          const decision = decisionsByTag.get(tag) || { insertionCount: 0, needsFallbackYellow: false };
           const range = cc.getRange();
 
-          // Base color:
-          // - hash match => green
-          // - hash mismatch + no insertions => yellow (fallback)
-          // - else => green, then overlay insertion ranges yellow
-          if (decision && decision.needsFallbackYellow) {
-            range.font.highlightColor = HIGHLIGHT.YELLOW;
-          } else {
-            range.font.highlightColor = HIGHLIGHT.GREEN;
-          }
+          // Base: Green or fallback Yellow
+          range.font.highlightColor = decision.needsFallbackYellow ? HIGHLIGHT.YELLOW : HIGHLIGHT.GREEN;
 
-          // Overlay insertions ONLY (visible changes)
-          if (decision && decision.insertionCount > 0) {
+          // If we have insertions, queue tracked changes load for overlay
+          if (decision.insertionCount > 0) {
             const tcs = range.getTrackedChanges();
             tcs.load("items/type");
-            await context.sync();
+            overlayBuckets.push(tcs);
+          }
+        }
 
-            for (const tc of tcs.items) {
-              const typeStr = String(tc.type || "").toLowerCase();
-              if (typeStr.includes("insertion")) {
-                tc.getRange().font.highlightColor = HIGHLIGHT.YELLOW;
-              }
-              // Deletions are shown as tracked deletions — no highlight needed.
+        await context.sync();
+
+        // Overlay: highlight only insertion ranges yellow (visible changes)
+        for (const tcs of overlayBuckets) {
+          for (const tc of tcs.items) {
+            const typeStr = String(tc.type || "").toLowerCase();
+            if (typeStr.includes("insertion")) {
+              tc.getRange().font.highlightColor = HIGHLIGHT.YELLOW;
             }
           }
         }
@@ -407,18 +405,18 @@
         set1("Validation complete ✅", "ok");
         setBadge("Validated", "positive", "All standard blocks match baseline.");
       } else if (fallbackCount > 0) {
-        set1("Validation complete ✅ (review)", "warn");
+        set1("Validation complete ✅", "warn");
         setBadge(
           "Review Needed",
           "notice",
-          `Some blocks differ from baseline but have no tracked insertions (possibly accepted changes). Green=${okCount}, Changed=${changedCount}, Fallback=${fallbackCount}.`
+          `Some blocks differ but have no tracked insertions (possibly accepted). Green=${okCount}, Changed=${changedCount}, Fallback=${fallbackCount}.`
         );
       } else {
         set1("Validation complete ✅", "ok");
         setBadge(
           "Validated",
           "positive",
-          `Green baseline applied. Yellow marks only inserted/changed visible text (tracked insertions). Green=${okCount}, Changed=${changedCount}.`
+          `Yellow marks only inserted/changed visible text (tracked insertions). Green=${okCount}, Changed=${changedCount}.`
         );
       }
     } catch (e) {
@@ -514,7 +512,6 @@
     set1("Running inside Word ✅", "ok");
     setBadge("Initializing", "neutral", "Enabling Track Changes (track everyone)…");
 
-    // Turn on Track Changes and leave it ON. [3](https://codesandbox.io/examples/package/office-addin-taskpane-js)[4](https://github.com/OfficeDev/Office-Add-in-samples/blob/main/Samples/hello-world/word-hello-world/taskpane.html)
     try {
       await ensureTrackAllEnabled();
       setBadge("Track Changes ON", "positive", "Tracking everyone’s changes.");

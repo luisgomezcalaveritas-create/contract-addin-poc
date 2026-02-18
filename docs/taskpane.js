@@ -2,11 +2,10 @@
   const CLAUSE_INDEX_URL =
     "https://luisgomezcalaveritas-create.github.io/contract-addin-poc/clauses.json";
 
-  // Read BUILD_VERSION from HTML (single source-of-truth in taskpane.html).
   const BUILD_VERSION = (window.BUILD_VERSION || "dev");
   console.log("Contract PoC build:", BUILD_VERSION);
 
-  // OpenXML highlight values (lowercase) – safest across Word on the web.
+  // OpenXML highlight values (lowercase)
   const HIGHLIGHT = {
     RED: "red",
     YELLOW: "yellow",
@@ -19,18 +18,14 @@
   const elSearch = document.getElementById("search");
   const elResults = document.getElementById("results");
   const btnValidate = document.getElementById("btnValidate");
-  const btnReload = document.getElementById("btnReload");
+  const btnReset = document.getElementById("btnReset");
 
-  // Badge elements inside status2
   const elBadge = document.getElementById("statusBadge");
   const elStatusText = document.getElementById("statusText");
 
   let clauses = [];
   let indexBaseUrl = CLAUSE_INDEX_URL;
 
-  // ---------------------------
-  // Status + Badge helpers
-  // ---------------------------
   function set1(msg, cls) {
     if (elStatus) {
       elStatus.textContent = msg;
@@ -45,18 +40,14 @@
     console.log("[detail]", msg);
   }
 
-  // Badge variants: neutral | positive | info | notice | negative
   function setBadge(label, variant, text) {
-    const labelWithBuild = label ? `${label}` : "";
     if (elBadge) {
-      elBadge.textContent = labelWithBuild;
+      elBadge.textContent = label || "";
       elBadge.className = `badge badge--${variant || "neutral"}`;
     }
-    // Always show build in the detail line for easy cache diagnosis
     const buildSuffix = `Build ${BUILD_VERSION}`;
     const combined = text ? `${text} • ${buildSuffix}` : buildSuffix;
     set2(combined, "small status2");
-    console.log("[badge]", { label, variant, text, build: BUILD_VERSION });
   }
 
   function logOfficeError(prefix, e) {
@@ -67,25 +58,15 @@
     return msg;
   }
 
-  // ---------------------------
-  // Utility helpers
-  // ---------------------------
   function escapeHtml(str) {
     return (str || "").replace(/[&<>"']/g, (m) => ({
-      "&": "&amp;",
-      "<": "&lt;",
-      ">": "&gt;",
-      "\"": "&quot;",
-      "'": "&#39;"
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;"
     }[m]));
   }
 
   function resolveUrl(baseUrl, maybeRelativeUrl) {
-    try {
-      return new URL(maybeRelativeUrl, baseUrl).toString();
-    } catch {
-      return maybeRelativeUrl;
-    }
+    try { return new URL(maybeRelativeUrl, baseUrl).toString(); }
+    catch { return maybeRelativeUrl; }
   }
 
   async function fetchJson(url) {
@@ -152,13 +133,6 @@
     };
   }
 
-  // ---------------------------
-  // Track Changes control
-  // ---------------------------
-  /**
-   * Turn on Track Changes for everyone and leave it ON.
-   * Uses Word.ChangeTrackingMode.trackAll. [3](https://codesandbox.io/examples/package/office-addin-taskpane-js)[4](https://github.com/OfficeDev/Office-Add-in-samples/blob/main/Samples/hello-world/word-hello-world/taskpane.html)
-   */
   async function ensureTrackAllEnabled() {
     await Word.run(async (context) => {
       context.document.changeTrackingMode = Word.ChangeTrackingMode.trackAll;
@@ -166,9 +140,6 @@
     });
   }
 
-  // ---------------------------
-  // UI rendering
-  // ---------------------------
   function renderList(filterText) {
     const q = (filterText || "").trim().toLowerCase();
     const filtered = clauses.filter(c => {
@@ -236,14 +207,11 @@
 
     elSearch.disabled = false;
     btnValidate.disabled = false;
-    btnReload.disabled = false;
+    btnReset.disabled = false;
 
     renderList(elSearch.value || "");
   }
 
-  // ---------------------------
-  // Insert clause
-  // ---------------------------
   async function insertClause(c) {
     if (!c.approved) {
       set1("Insertion blocked", "warn");
@@ -286,9 +254,28 @@
     }
   }
 
-  // ---------------------------
-  // Validate (partial-yellow + fallback)
-  // ---------------------------
+  // ✅ RESET: remove the traffic-light highlight colors applied during validation.
+  // Office.js supports removing highlight by setting highlightColor = null. [1](https://github.com/OfficeDev/office-js/issues/4638)
+  async function resetHighlights() {
+    try {
+      set1("Resetting highlights…", "ok");
+      setBadge("Resetting", "info", "Clearing highlight colors…");
+
+      await Word.run(async (context) => {
+        const bodyRange = context.document.body.getRange();
+        bodyRange.font.highlightColor = null; // remove highlight [1](https://github.com/OfficeDev/office-js/issues/4638)
+        await context.sync();
+      });
+
+      set1("Reset complete ✅", "ok");
+      setBadge("Track Changes ON", "positive", "Highlights cleared. You can Validate again anytime.");
+    } catch (e) {
+      const msg = logOfficeError("Reset failed", e);
+      set1("Reset failed ❌", "err");
+      setBadge("Error", "negative", msg);
+    }
+  }
+
   async function validateDocument() {
     try {
       set1("Validating…", "ok");
@@ -296,14 +283,12 @@
 
       await ensureTrackAllEnabled();
 
-      // Tracked changes APIs are WordApi 1.6+. [5](https://docs.github.com/en/get-started/start-your-journey/creating-an-account-on-github)[3](https://codesandbox.io/examples/package/office-addin-taskpane-js)
       const trackedApiSupported = Office.context.requirements.isSetSupported("WordApi", "1.6");
       if (!trackedApiSupported) {
         await validateDocumentHashOnlyFallback();
         return;
       }
 
-      // PASS 1: paint body red; capture tag/text + insertionCount per standard block
       const snapshot = await Word.run(async (context) => {
         context.document.body.getRange().font.highlightColor = HIGHLIGHT.RED;
 
@@ -331,12 +316,10 @@
           const insertionCount = (r.tcs.items || [])
             .filter(tc => String(tc.type || "").toLowerCase().includes("insertion"))
             .length;
-
           return { tag: r.tag, text: r.range.text || "", insertionCount };
         });
       });
 
-      // PASS 1.5: compute hash decisions outside Word.run
       const decisionsByTag = new Map();
       let okCount = 0;
       let changedCount = 0;
@@ -359,13 +342,11 @@
         });
       }
 
-      // PASS 2: apply base colors + overlay insertion ranges
       await Word.run(async (context) => {
         const controls = context.document.contentControls;
         controls.load("items/tag");
         await context.sync();
 
-        // First apply base highlight and queue tracked changes loads for those needing overlay
         const overlayBuckets = [];
         for (const cc of controls.items) {
           const tag = cc.tag || "";
@@ -374,10 +355,8 @@
           const decision = decisionsByTag.get(tag) || { insertionCount: 0, needsFallbackYellow: false };
           const range = cc.getRange();
 
-          // Base: Green or fallback Yellow
           range.font.highlightColor = decision.needsFallbackYellow ? HIGHLIGHT.YELLOW : HIGHLIGHT.GREEN;
 
-          // If we have insertions, queue tracked changes load for overlay
           if (decision.insertionCount > 0) {
             const tcs = range.getTrackedChanges();
             tcs.load("items/type");
@@ -387,7 +366,6 @@
 
         await context.sync();
 
-        // Overlay: highlight only insertion ranges yellow (visible changes)
         for (const tcs of overlayBuckets) {
           for (const tc of tcs.items) {
             const typeStr = String(tc.type || "").toLowerCase();
@@ -400,24 +378,17 @@
         await context.sync();
       });
 
-      // Contextual badge outcome
       if (changedCount === 0) {
         set1("Validation complete ✅", "ok");
         setBadge("Validated", "positive", "All standard blocks match baseline.");
       } else if (fallbackCount > 0) {
         set1("Validation complete ✅", "warn");
-        setBadge(
-          "Review Needed",
-          "notice",
-          `Some blocks differ but have no tracked insertions (possibly accepted). Green=${okCount}, Changed=${changedCount}, Fallback=${fallbackCount}.`
-        );
+        setBadge("Review Needed", "notice",
+          `Some blocks differ but have no tracked insertions (possibly accepted). Green=${okCount}, Changed=${changedCount}, Fallback=${fallbackCount}.`);
       } else {
         set1("Validation complete ✅", "ok");
-        setBadge(
-          "Validated",
-          "positive",
-          `Yellow marks only inserted/changed visible text (tracked insertions). Green=${okCount}, Changed=${changedCount}.`
-        );
+        setBadge("Validated", "positive",
+          `Yellow marks only inserted/changed visible text. Green=${okCount}, Changed=${changedCount}.`);
       }
     } catch (e) {
       const msg = logOfficeError("Validate failed", e);
@@ -426,7 +397,6 @@
     }
   }
 
-  // Hash-only fallback (if tracked changes API not supported)
   async function validateDocumentHashOnlyFallback() {
     try {
       set1("Validating (fallback)…", "warn");
@@ -490,9 +460,7 @@
     }
   }
 
-  // ---------------------------
   // Boot
-  // ---------------------------
   set1("taskpane.js loaded ✅", "ok");
   setBadge("Initializing", "neutral", "Waiting for Word…");
 
@@ -517,29 +485,19 @@
       setBadge("Track Changes ON", "positive", "Tracking everyone’s changes.");
     } catch (e) {
       console.error("Failed to enable Track Changes:", e, e?.debugInfo);
-      setBadge("Track Changes OFF", "negative", "Could not enable Track Changes. Partial-yellow requires tracking.");
+      setBadge("Track Changes OFF", "negative", "Could not enable Track Changes.");
     }
 
-    // Wire UI
     elSearch.addEventListener("input", () => renderList(elSearch.value));
     btnValidate.onclick = validateDocument;
+    btnReset.onclick = resetHighlights;
 
-    btnReload.onclick = async () => {
-      btnReload.disabled = true;
-      try { await loadClauses(); }
-      finally { btnReload.disabled = false; }
-    };
-
-    // Load clause index
-    btnReload.disabled = true;
     try {
       await loadClauses();
-      btnReload.disabled = false;
     } catch (e) {
       set1("Failed to load clauses ❌", "err");
       setBadge("Error", "negative", e?.message || String(e));
       console.error(e);
-      btnReload.disabled = false;
     }
   });
 })();

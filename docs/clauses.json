@@ -1,0 +1,16 @@
+[
+  {
+    "clauseId": "LOL",
+    "version": "1",
+    "title": "Limitation of Liability",
+    "metaFile": "LOL_v1.json",
+    "docxFile": "LOL_v1.docx"
+  },
+  {
+    "clauseId": "CONF",
+    "version": "1",
+    "title": "Confidentiality",
+    "metaFile": "CONF_v1.json",
+    "docxFile": "CONF_v1.docx"
+  }
+]

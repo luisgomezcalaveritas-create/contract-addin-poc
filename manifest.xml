@@ -5,39 +5,38 @@
            xmlns:ov="http://schemas.microsoft.com/office/taskpaneappversionoverrides"
            xsi:type="TaskPaneApp">
 
-  <!-- Unique add-in identity (keep stable across versions) -->
-  <Id>757ec108-6ee8-4f14-81e1-71fa750aa0b7</Id>
-  <Version>1.0.0.1</Version>
+  <!-- KEEP THE SAME ID as the manifest that worked -->
+  <Id>c8b1e9b1-7a7b-4c22-9b6f-111111111111</Id>
+
+  <!-- Increment version for each iteration -->
+  <Version>1.0.0.2</Version>
+
   <ProviderName>Contract PoC</ProviderName>
   <DefaultLocale>en-US</DefaultLocale>
 
   <DisplayName DefaultValue="Contract Drafting PoC"/>
   <Description DefaultValue="PoC for clause insertion and red/yellow/green validation."/>
 
-  <!-- Icons (HTTPS) -->
   <IconUrl DefaultValue="https://luisgomezcalaveritas-create.github.io/contract-addin-poc/icon.png"/>
   <HighResolutionIconUrl DefaultValue="https://luisgomezcalaveritas-create.github.io/contract-addin-poc/icon.png"/>
-
-  <!-- Optional but recommended -->
   <SupportUrl DefaultValue="https://luisgomezcalaveritas-create.github.io/contract-addin-poc/"/>
 
   <Hosts>
     <Host Name="Word"/>
   </Hosts>
 
-  <!-- Trust domains used by the add-in -->
   <AppDomains>
     <AppDomain>https://luisgomezcalaveritas-create.github.io</AppDomain>
   </AppDomains>
 
-  <!-- SourceLocation MUST be HTTPS -->
+  <!-- SourceLocation MUST be HTTPS; add a version query to avoid caching -->
   <DefaultSettings>
-    <SourceLocation DefaultValue="https://luisgomezcalaveritas-create.github.io/contract-addin-poc/taskpane.html"/>
+    <SourceLocation DefaultValue="https://luisgomezcalaveritas-create.github.io/contract-addin-poc/taskpane.html?v=1.0.0.2"/>
   </DefaultSettings>
 
   <Permissions>ReadWriteDocument</Permissions>
 
-  <!-- Add a Home ribbon button for best demo experience -->
+  <!-- Home ribbon button -->
   <VersionOverrides xmlns="http://schemas.microsoft.com/office/taskpaneappversionoverrides" xsi:type="VersionOverridesV1_0">
     <Hosts>
       <Host xsi:type="Word">
@@ -76,7 +75,8 @@
         <bt:Image id="icon80" DefaultValue="https://luisgomezcalaveritas-create.github.io/contract-addin-poc/icon.png"/>
       </bt:Images>
       <bt:Urls>
-        <bt:Url id="taskpaneUrl" DefaultValue="https://luisgomezcalaveritas-create.github.io/contract-addin-poc/taskpane.html"/>
+        <!-- Match the same cache-busted URL -->
+        <bt:Url id="taskpaneUrl" DefaultValue="https://luisgomezcalaveritas-create.github.io/contract-addin-poc/taskpane.html?v=1.0.0.2"/>
       </bt:Urls>
       <bt:ShortStrings>
         <bt:String id="grpLabel" DefaultValue="Contracts"/>

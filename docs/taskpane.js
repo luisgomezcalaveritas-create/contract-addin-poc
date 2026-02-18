@@ -5,7 +5,7 @@
   const BUILD_VERSION = (window.BUILD_VERSION || "dev");
   console.log("Contract PoC build:", BUILD_VERSION);
 
-  // OpenXML highlight values (lowercase)
+  // OpenXML highlight values (lowercase) – safest across Word on the web.
   const HIGHLIGHT = {
     RED: "red",
     YELLOW: "yellow",
@@ -20,12 +20,16 @@
   const btnValidate = document.getElementById("btnValidate");
   const btnReset = document.getElementById("btnReset");
 
+  // Badge elements inside status2
   const elBadge = document.getElementById("statusBadge");
   const elStatusText = document.getElementById("statusText");
 
   let clauses = [];
   let indexBaseUrl = CLAUSE_INDEX_URL;
 
+  // ---------------------------
+  // Status + Badge helpers
+  // ---------------------------
   function set1(msg, cls) {
     if (elStatus) {
       elStatus.textContent = msg;
@@ -40,6 +44,7 @@
     console.log("[detail]", msg);
   }
 
+  // Badge variants: neutral | positive | info | notice | negative
   function setBadge(label, variant, text) {
     if (elBadge) {
       elBadge.textContent = label || "";
@@ -48,6 +53,7 @@
     const buildSuffix = `Build ${BUILD_VERSION}`;
     const combined = text ? `${text} • ${buildSuffix}` : buildSuffix;
     set2(combined, "small status2");
+    console.log("[badge]", { label, variant, text, build: BUILD_VERSION });
   }
 
   function logOfficeError(prefix, e) {
@@ -58,15 +64,25 @@
     return msg;
   }
 
+  // ---------------------------
+  // Utility helpers
+  // ---------------------------
   function escapeHtml(str) {
     return (str || "").replace(/[&<>"']/g, (m) => ({
-      "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;"
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      "\"": "&quot;",
+      "'": "&#39;"
     }[m]));
   }
 
   function resolveUrl(baseUrl, maybeRelativeUrl) {
-    try { return new URL(maybeRelativeUrl, baseUrl).toString(); }
-    catch { return maybeRelativeUrl; }
+    try {
+      return new URL(maybeRelativeUrl, baseUrl).toString();
+    } catch {
+      return maybeRelativeUrl;
+    }
   }
 
   async function fetchJson(url) {
@@ -133,6 +149,9 @@
     };
   }
 
+  // ---------------------------
+  // Track Changes control
+  // ---------------------------
   async function ensureTrackAllEnabled() {
     await Word.run(async (context) => {
       context.document.changeTrackingMode = Word.ChangeTrackingMode.trackAll;
@@ -140,6 +159,9 @@
     });
   }
 
+  // ---------------------------
+  // UI rendering
+  // ---------------------------
   function renderList(filterText) {
     const q = (filterText || "").trim().toLowerCase();
     const filtered = clauses.filter(c => {
@@ -212,6 +234,9 @@
     renderList(elSearch.value || "");
   }
 
+  // ---------------------------
+  // Insert clause
+  // ---------------------------
   async function insertClause(c) {
     if (!c.approved) {
       set1("Insertion blocked", "warn");
@@ -254,8 +279,9 @@
     }
   }
 
-  // ✅ RESET: remove the traffic-light highlight colors applied during validation.
-  // Office.js supports removing highlight by setting highlightColor = null. [1](https://github.com/OfficeDev/office-js/issues/4638)
+  // ---------------------------
+  // Reset: clear highlights from validation
+  // ---------------------------
   async function resetHighlights() {
     try {
       set1("Resetting highlights…", "ok");
@@ -263,7 +289,7 @@
 
       await Word.run(async (context) => {
         const bodyRange = context.document.body.getRange();
-        bodyRange.font.highlightColor = null; // remove highlight [1](https://github.com/OfficeDev/office-js/issues/4638)
+        bodyRange.font.highlightColor = null; // Remove highlight by setting to null [2](https://learn.microsoft.com/en-us/javascript/api/manifest/appdomain?view=word-js-preview)
         await context.sync();
       });
 
@@ -276,6 +302,9 @@
     }
   }
 
+  // ---------------------------
+  // Validate (PATCHED): uses cc.getTrackedChanges() (NOT range.getTrackedChanges())
+  // ---------------------------
   async function validateDocument() {
     try {
       set1("Validating…", "ok");
@@ -283,12 +312,14 @@
 
       await ensureTrackAllEnabled();
 
+      // Tracked changes APIs are WordApi 1.6+. [1](https://help.officeatwork.com/en/articles/299-deploying-office-add-ins-via-sideloading)
       const trackedApiSupported = Office.context.requirements.isSetSupported("WordApi", "1.6");
       if (!trackedApiSupported) {
         await validateDocumentHashOnlyFallback();
         return;
       }
 
+      // PASS 1: paint red + snapshot text + insertionCount using ContentControl.getTrackedChanges()
       const snapshot = await Word.run(async (context) => {
         context.document.body.getRange().font.highlightColor = HIGHLIGHT.RED;
 
@@ -297,6 +328,7 @@
         await context.sync();
 
         const rows = [];
+
         for (const cc of controls.items) {
           const tag = cc.tag || "";
           if (!tag.startsWith("TEMPLATE|") && !tag.startsWith("APPROVED|")) continue;
@@ -304,7 +336,8 @@
           const range = cc.getRange();
           range.load("text");
 
-          const tcs = range.getTrackedChanges();
+          // PATCH: safer than range.getTrackedChanges()
+          const tcs = cc.getTrackedChanges();
           tcs.load("items/type");
 
           rows.push({ tag, range, tcs });
@@ -316,10 +349,16 @@
           const insertionCount = (r.tcs.items || [])
             .filter(tc => String(tc.type || "").toLowerCase().includes("insertion"))
             .length;
-          return { tag: r.tag, text: r.range.text || "", insertionCount };
+
+          return {
+            tag: r.tag,
+            text: r.range.text || "",
+            insertionCount
+          };
         });
       });
 
+      // PASS 1.5: compute hash decisions outside Word.run
       const decisionsByTag = new Map();
       let okCount = 0;
       let changedCount = 0;
@@ -342,12 +381,14 @@
         });
       }
 
+      // PASS 2: apply green/yellow base + overlay insertion ranges yellow (via TrackedChange.getRange)
       await Word.run(async (context) => {
         const controls = context.document.contentControls;
         controls.load("items/tag");
         await context.sync();
 
-        const overlayBuckets = [];
+        const overlays = [];
+
         for (const cc of controls.items) {
           const tag = cc.tag || "";
           if (!tag.startsWith("TEMPLATE|") && !tag.startsWith("APPROVED|")) continue;
@@ -355,40 +396,52 @@
           const decision = decisionsByTag.get(tag) || { insertionCount: 0, needsFallbackYellow: false };
           const range = cc.getRange();
 
+          // Base: green, unless fallback yellow
           range.font.highlightColor = decision.needsFallbackYellow ? HIGHLIGHT.YELLOW : HIGHLIGHT.GREEN;
 
+          // Overlay only if insertions exist
           if (decision.insertionCount > 0) {
-            const tcs = range.getTrackedChanges();
+            const tcs = cc.getTrackedChanges();
             tcs.load("items/type");
-            overlayBuckets.push(tcs);
+            overlays.push(tcs);
           }
         }
 
         await context.sync();
 
-        for (const tcs of overlayBuckets) {
+        // Highlight only insertion ranges yellow (visible changes)
+        for (const tcs of overlays) {
           for (const tc of tcs.items) {
             const typeStr = String(tc.type || "").toLowerCase();
             if (typeStr.includes("insertion")) {
+              // TrackedChange.getRange() supported. [1](https://help.officeatwork.com/en/articles/299-deploying-office-add-ins-via-sideloading)
               tc.getRange().font.highlightColor = HIGHLIGHT.YELLOW;
             }
+            // Deletions remain as tracked deletions; no highlight needed.
           }
         }
 
         await context.sync();
       });
 
+      // Badge outcome
       if (changedCount === 0) {
         set1("Validation complete ✅", "ok");
         setBadge("Validated", "positive", "All standard blocks match baseline.");
       } else if (fallbackCount > 0) {
         set1("Validation complete ✅", "warn");
-        setBadge("Review Needed", "notice",
-          `Some blocks differ but have no tracked insertions (possibly accepted). Green=${okCount}, Changed=${changedCount}, Fallback=${fallbackCount}.`);
+        setBadge(
+          "Review Needed",
+          "notice",
+          `Some blocks differ but have no tracked insertions (possibly accepted). Green=${okCount}, Changed=${changedCount}, Fallback=${fallbackCount}.`
+        );
       } else {
         set1("Validation complete ✅", "ok");
-        setBadge("Validated", "positive",
-          `Yellow marks only inserted/changed visible text. Green=${okCount}, Changed=${changedCount}.`);
+        setBadge(
+          "Validated",
+          "positive",
+          `Yellow marks only inserted/changed visible text. Green=${okCount}, Changed=${changedCount}.`
+        );
       }
     } catch (e) {
       const msg = logOfficeError("Validate failed", e);
@@ -397,6 +450,9 @@
     }
   }
 
+  // ---------------------------
+  // Hash-only fallback (if tracked changes API not supported)
+  // ---------------------------
   async function validateDocumentHashOnlyFallback() {
     try {
       set1("Validating (fallback)…", "warn");
@@ -460,7 +516,9 @@
     }
   }
 
+  // ---------------------------
   // Boot
+  // ---------------------------
   set1("taskpane.js loaded ✅", "ok");
   setBadge("Initializing", "neutral", "Waiting for Word…");
 

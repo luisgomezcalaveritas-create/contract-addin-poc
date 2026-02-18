@@ -5,22 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Contract Drafting PoC</title>
 
-  <!-- Office.js is required inside Word -->
+  <!-- Office.js must be loaded as a SCRIPT, not plain text -->
   https://appsforoffice.microsoft.com/lib/1/hosted/office.js</script>
 
   <style>
     body { font-family: Arial, sans-serif; margin: 12px; }
     .banner { padding: 10px; border-radius: 6px; background: #f4f4f4; margin-bottom: 12px; }
-    .row { margin: 10px 0; }
-    label { display:block; font-size: 12px; color:#444; margin-bottom: 4px; }
-    select, button { width: 100%; padding: 10px; font-size: 14px; }
-    button { cursor: pointer; }
-    .btn { margin-top: 8px; }
-    .small { font-size: 12px; color:#666; }
+    .small { font-size: 12px; color: #666; }
     .ok { color: #0b6a0b; font-weight: 600; }
     .warn { color: #9a6b00; font-weight: 600; }
     .err { color: #b00020; font-weight: 600; }
-    hr { border: none; border-top: 1px solid #e5e5e5; margin: 12px 0; }
+    button { width: 100%; padding: 10px; font-size: 14px; cursor: pointer; margin-top: 10px; }
   </style>
 </head>
 
@@ -30,26 +25,9 @@
     <div id="status2" class="small"></div>
   </div>
 
-  <div class="row">
-    <label for="clauseSelect">Approved clause</label>
-    <select id="clauseSelect">
-      <option value="">(Load clauses first)</option>
-    </select>
-    <button class="btn" id="btnLoad">Load clauses</button>
-    <button class="btn" id="btnInsert">Insert selected clause</button>
-  </div>
+  <button id="btnValidate">Validate (debug)</button>
 
-  <hr />
-
-  <div class="row">
-    <button id="btnValidate">Validate (Red / Yellow / Green)</button>
-    <div class="small" style="margin-top:8px;">
-      • Red = custom (outside standard blocks)<br />
-      • Green = standard unchanged<br />
-      • Yellow = standard edited
-    </div>
-  </div>
-
+  <!-- Your taskpane code -->
   ./taskpane.js</script>
 </body>
 </html>

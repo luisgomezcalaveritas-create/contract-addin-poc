@@ -48,7 +48,6 @@
     :root{
       --adobe-accent: #fa0f00;
 
-      /* Badge semantic variants (Spectrum-style semantics) */
       --badge-neutral-bg: #ededed;
       --badge-neutral-fg: #333;
 
@@ -120,7 +119,6 @@
   <div class="banner" role="status" aria-live="polite" aria-atomic="true">
     <div id="status" class="small">Loading…</div>
 
-    <!-- Contextual badge + message -->
     <div id="status2" class="small status2" aria-live="polite" aria-atomic="true">
       <span id="statusBadge" class="badge badge--neutral">Initializing</span>
       <span id="statusText">Loading…</span>
@@ -136,20 +134,17 @@
 
   <div class="row">
     <button id="btnValidate" class="primary" disabled>Validate (Track Changes overlay)</button>
-    <button id="btnReload" disabled>Reload clauses</button>
+    <button id="btnReset" disabled>Reset (Clear highlights)</button>
   </div>
 
   <div class="hint">
     <b>Demo:</b> Click a clause to insert → edit text → click <span class="kbd">Validate</span>.<br/>
-    <b>Red</b> = outside standard blocks. <b>Green</b> = standard baseline text inside TEMPLATE/APPROVED blocks.<br/>
-    <b>Yellow</b> = only inserted/changed visible text (tracked insertions). Deletions remain as tracked deletions.
+    <b>Reset</b> clears traffic-light highlights applied during validation.
   </div>
 
-  <!-- SINGLE source-of-truth for build version (update ONLY this value) -->
+  <!-- SINGLE source-of-truth for build version -->
   <script>
-    // Update this value for each deploy, and make sure manifest SourceLocation uses the same version.
     window.BUILD_VERSION = "1.0.0.4";
-    // Load taskpane.js using the same BUILD_VERSION for cache-busting.
     const s = document.createElement("script");
     s.src = "./taskpane.js?v=" + encodeURIComponent(window.BUILD_VERSION);
     s.defer = true;
@@ -157,3 +152,4 @@
   </script>
 </body>
 </html>
+``

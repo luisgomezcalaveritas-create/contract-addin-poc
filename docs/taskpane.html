@@ -1,172 +1,73 @@
-  <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Contract Drafting PoC</title>
 
-  <!-- Office.js (must be loaded in the task pane) -->
+  <!-- Office.js from Microsoft CDN (supported approach) -->
   <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
 
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 12px;
-      color: #111;
-    }
-
-    h3 {
-      margin: 0 0 10px 0;
-      font-size: 16px;
-    }
-
-    .banner {
-      padding: 10px;
-      border-radius: 6px;
-      background: #f4f4f4;
-      margin-bottom: 12px;
-      border: 1px solid #e6e6e6;
-    }
-
+    body { font-family: Arial, sans-serif; margin: 12px; color:#111; }
+    h3 { margin: 0 0 10px 0; font-size: 16px; }
+    .banner { padding: 10px; border-radius: 6px; background: #f4f4f4; border: 1px solid #e6e6e6; margin-bottom: 12px; }
     .small { font-size: 12px; color: #666; line-height: 1.35; }
     .ok { color: #0b6a0b; font-weight: 600; }
     .warn { color: #9a6b00; font-weight: 600; }
     .err { color: #b00020; font-weight: 600; }
 
-    label {
-      display: block;
-      font-size: 12px;
-      color: #444;
-      margin: 10px 0 6px;
-    }
+    label { display:block; font-size: 12px; color:#444; margin: 10px 0 6px; }
+    input[type="text"] { width:100%; padding:8px; box-sizing:border-box; border:1px solid #ddd; border-radius:6px; outline:none; }
+    input[type="text"]:focus { border-color:#999; }
 
-    input[type="text"] {
-      width: 100%;
-      padding: 8px;
-      box-sizing: border-box;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      outline: none;
-    }
-    input[type="text"]:focus {
-      border-color: #999;
-    }
+    ul { list-style:none; padding:0; margin:10px 0 0; border:1px solid #ddd; border-radius:6px; max-height:320px; overflow:auto; background:#fff; }
+    li { padding:10px; border-bottom:1px solid #eee; cursor:pointer; }
+    li:last-child { border-bottom:none; }
+    li:hover { background:#f8f8f8; }
+    .meta { color:#666; font-size:12px; margin-top:4px; line-height:1.3; }
 
-    ul {
-      list-style: none;
-      padding: 0;
-      margin: 10px 0 0;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      max-height: 320px;
-      overflow: auto;
-      background: #fff;
-    }
+    .pill { display:inline-block; font-size:11px; padding:2px 8px; border-radius:999px; background:#eee; margin-left:6px; vertical-align:middle; }
+    .pill.ok { background:#e7f5e7; color:#0b6a0b; }
+    .pill.warn { background:#fff4dd; color:#9a6b00; }
 
-    li {
-      padding: 10px;
-      border-bottom: 1px solid #eee;
-      cursor: pointer;
-    }
-    li:last-child { border-bottom: none; }
-    li:hover { background: #f8f8f8; }
+    .row { display:flex; gap:8px; margin-top:10px; }
+    button { flex:1; padding:10px; font-size:14px; cursor:pointer; border:1px solid #ddd; border-radius:6px; background:#fff; }
+    button:hover { background:#f7f7f7; }
+    button:disabled { opacity:.6; cursor:not-allowed; }
 
-    .meta {
-      color: #666;
-      font-size: 12px;
-      margin-top: 4px;
-      line-height: 1.3;
-    }
-
-    .pill {
-      display: inline-block;
-      font-size: 11px;
-      padding: 2px 8px;
-      border-radius: 999px;
-      background: #eee;
-      margin-left: 6px;
-      vertical-align: middle;
-    }
-    .pill.ok { background: #e7f5e7; color: #0b6a0b; }
-    .pill.warn { background: #fff4dd; color: #9a6b00; }
-
-    .row {
-      display: flex;
-      gap: 8px;
-      margin-top: 10px;
-    }
-
-    button {
-      flex: 1;
-      padding: 10px;
-      font-size: 14px;
-      cursor: pointer;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      background: #fff;
-    }
-    button:hover { background: #f7f7f7; }
-    button:disabled { opacity: 0.6; cursor: not-allowed; }
-
-    .hint {
-      margin-top: 10px;
-      font-size: 12px;
-      color: #555;
-      background: #fafafa;
-      border: 1px dashed #e3e3e3;
-      border-radius: 6px;
-      padding: 8px;
-      line-height: 1.35;
-    }
-
-    .kbd {
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
-      font-size: 11px;
-      border: 1px solid #ddd;
-      border-bottom-width: 2px;
-      padding: 1px 6px;
-      border-radius: 4px;
-      background: #fff;
-      margin: 0 2px;
-    }
+    .hint { margin-top:10px; font-size:12px; color:#555; background:#fafafa; border:1px dashed #e3e3e3; border-radius:6px; padding:8px; line-height:1.35; }
+    .kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+           font-size:11px; border:1px solid #ddd; border-bottom-width:2px; padding:1px 6px; border-radius:4px; background:#fff; }
   </style>
 </head>
 
 <body>
   <h3>Contract Drafting PoC</h3>
 
-  <!-- Status banner -->
   <div class="banner" role="status" aria-live="polite" aria-atomic="true">
     <div id="status" class="small">Loading…</div>
     <div id="status2" class="small"></div>
   </div>
 
-  <!-- Search -->
   <label for="search">Search approved clauses</label>
-  <input
-    id="search"
-    type="text"
-    placeholder="Search by title, id, tags… (e.g., nda, risk, term, payment)"
-    disabled
-  />
+  <input id="search" type="text"
+         placeholder="Search by title, id, tags… (e.g., nda, risk, term, payment)"
+         disabled />
 
-  <!-- Results -->
   <ul id="results" aria-label="Clause results list"></ul>
 
-  <!-- Actions -->
   <div class="row">
     <button id="btnValidate" disabled>Validate (Red/Yellow/Green)</button>
     <button id="btnReload" disabled>Reload clauses</button>
   </div>
 
   <div class="hint">
-    <b>Demo tips:</b><br/>
-    1) Click a clause to insert it at the cursor.<br/>
-    2) Edit the inserted clause text.<br/>
-    3) Click <span class="kbd">Validate</span> → Green = unchanged, Yellow = edited, Red = outside approved blocks.
+    <b>Demo:</b> Click a clause to insert → edit text → click <span class="kbd">Validate</span>.
+    Green = unchanged, Yellow = edited, Red = outside approved blocks.
   </div>
 
-  <!-- Load your add-in logic (defer avoids timing issues) -->
-  <script src="./taskpane.js?v=20260218-4" defer></script>
+  <!-- IMPORTANT: bump v= when you deploy changes to avoid cached JS -->
+  <script src="./taskpane.js?v=20260218-7"></script>
   </body>
 </html>

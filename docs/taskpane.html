@@ -45,11 +45,10 @@
     button:hover { background:#f7f7f7; }
     button:disabled { opacity:.6; cursor:not-allowed; }
 
-    /* Adobe-ish accent cue (lightweight) */
     :root{
       --adobe-accent: #fa0f00;
 
-      /* Badge semantics (Spectrum-style: positive/info/notice/negative) */
+      /* Badge semantic variants (Spectrum-style semantics) */
       --badge-neutral-bg: #ededed;
       --badge-neutral-fg: #333;
 
@@ -66,13 +65,13 @@
       --badge-negative-fg: #b00020;
     }
 
-    /* Contextual status line with badge + text */
     .status2{
       display:flex;
       align-items:center;
       gap:8px;
       margin-top:6px;
     }
+
     .badge{
       display:inline-flex;
       align-items:center;
@@ -83,13 +82,13 @@
       border:1px solid rgba(0,0,0,0.06);
       white-space:nowrap;
     }
+
     .badge--neutral  { background: var(--badge-neutral-bg);  color: var(--badge-neutral-fg); }
     .badge--positive { background: var(--badge-positive-bg); color: var(--badge-positive-fg); }
     .badge--info     { background: var(--badge-info-bg);     color: var(--badge-info-fg); }
     .badge--notice   { background: var(--badge-notice-bg);   color: var(--badge-notice-fg); }
     .badge--negative { background: var(--badge-negative-bg); color: var(--badge-negative-fg); }
 
-    /* Make Validate feel like primary action */
     button.primary{
       border-color: rgba(250,15,0,0.25);
       box-shadow: inset 0 0 0 1px rgba(250,15,0,0.12);
@@ -121,7 +120,7 @@
   <div class="banner" role="status" aria-live="polite" aria-atomic="true">
     <div id="status" class="small">Loading…</div>
 
-    <!-- Status badge + message (contextual) -->
+    <!-- Contextual badge + message -->
     <div id="status2" class="small status2" aria-live="polite" aria-atomic="true">
       <span id="statusBadge" class="badge badge--neutral">Initializing</span>
       <span id="statusText">Loading…</span>
@@ -146,7 +145,15 @@
     <b>Yellow</b> = only inserted/changed visible text (tracked insertions). Deletions remain as tracked deletions.
   </div>
 
-  <!-- Bump v= whenever you publish changes (Word web caches aggressively) -->
-  <script src="./taskpane.js?v/script>
+  <!-- SINGLE source-of-truth for build version (update ONLY this value) -->
+  <script>
+    // Update this value for each deploy, and make sure manifest SourceLocation uses the same version.
+    window.BUILD_VERSION = "1.0.0.4";
+    // Load taskpane.js using the same BUILD_VERSION for cache-busting.
+    const s = document.createElement("script");
+    s.src = "./taskpane.js?v=" + encodeURIComponent(window.BUILD_VERSION);
+    s.defer = true;
+    document.body.appendChild(s);
+  </script>
 </body>
 </html>

@@ -5,11 +5,13 @@
   const set1 = (m) => { status.textContent = m; console.log("[status]", m); };
   const set2 = (m) => { status2.textContent = m || ""; console.log("[detail]", m); };
 
+  // Prove this file loaded
   set1("taskpane.js loaded ✅");
 
+  // Prove Office.js loaded
   if (typeof Office === "undefined") {
     set1("Office is undefined ❌");
-    set2("Office.js did not load. Check Network for office.js.");
+    set2("Office.js did not load. Check that office.js is requested in Network.");
     return;
   }
 

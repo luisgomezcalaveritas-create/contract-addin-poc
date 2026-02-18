@@ -1,45 +1,60 @@
 {
+  "schemaVersion": "1.0",
+  "generatedAt": "2026-02-18T13:03:11Z",
+  "source": {
+    "type": "github-pages",
+    "description": "Contract Add-in PoC clause index"
+  },
   "clauses": [
     {
       "clauseId": "CONF",
       "title": "Confidentiality",
       "version": "v1",
       "approved": true,
-      "clauseJsonUrl": "https://luisgomezcalaveritas-create.github.io/contract-addin-poc/CONF_v1.json",
-      "clauseDocxUrl": "https://luisgomezcalaveritas-create.github.io/contract-addin-poc/CONF_v1.docx"
+      "tags": ["confidentiality", "nda", "data", "information", "non-disclosure", "privacy"],
+      "category": "Legal Protections",
+      "clauseJsonUrl": "./CONF_v1.json",
+      "clauseDocxUrl": "./CONF_v1.docx"
     },
     {
       "clauseId": "LOL",
       "title": "Limitation of Liability",
       "version": "v1",
       "approved": true,
-      "clauseJsonUrl": "https://luisgomezcalaveritas-create.github.io/contract-addin-poc/LOL_v1.json",
-      "clauseDocxUrl": "https://luisgomezcalaveritas-create.github.io/contract-addin-poc/LOL_v1.docx"
+      "tags": ["liability", "limitation", "risk", "damages", "cap", "indirect", "consequential"],
+      "category": "Risk Allocation",
+      "clauseJsonUrl": "./LOL_v1.json",
+      "clauseDocxUrl": "./LOL_v1.docx"
     },
     {
       "clauseId": "PAY",
       "title": "Payment Terms",
       "version": "v1",
       "approved": true,
-      "clauseJsonUrl": "https://luisgomezcalaveritas-create.github.io/contract-addin-poc/PAY_v1.json",
-      "clauseDocxUrl": "https://luisgomezcalaveritas-create.github.io/contract-addin-poc/PAY_v1.docx"
+      "tags": ["payment", "fees", "pricing", "invoice", "billing", "tax", "late fees"],
+      "category": "Commercial",
+      "clauseJsonUrl": "./PAY_v1.json",
+      "clauseDocxUrl": "./PAY_v1.docx"
     },
     {
       "clauseId": "TERM",
       "title": "Term",
       "version": "v1",
       "approved": true,
-      "clauseJsonUrl": "https://luisgomezcalaveritas-create.github.io/contract-addin-poc/TERM_v1.json",
-      "clauseDocxUrl": "https://luisgomezcalaveritas-create.github.io/contract-addin-poc/TERM_v1.docx"
+      "tags": ["term", "duration", "renewal", "effective date", "subscription"],
+      "category": "Commercial",
+      "clauseJsonUrl": "./TERM_v1.json",
+      "clauseDocxUrl": "./TERM_v1.docx"
     },
     {
       "clauseId": "TERMNT",
       "title": "Termination",
       "version": "v1",
       "approved": true,
-      "clauseJsonUrl": "https://luisgomezcalaveritas-create.github.io/contract-addin-poc/TERMNT_v1.json",
-      "clauseDocxUrl": "https://luisgomezcalaveritas-create.github.io/contract-addin-poc/TERMNT_v1.docx"
+      "tags": ["termination", "breach", "notice", "cure", "suspension", "end"],
+      "category": "Legal Protections",
+      "clauseJsonUrl": "./TERMNT_v1.json",
+      "clauseDocxUrl": "./TERMNT_v1.docx"
     }
   ]
 }
-``

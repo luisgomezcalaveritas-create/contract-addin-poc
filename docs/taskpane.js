@@ -1,22 +1,15 @@
 (function () {
-  /**
-   * Hardcoded clause index URL (as requested)
-   */
   const CLAUSE_INDEX_URL =
     "https://luisgomezcalaveritas-create.github.io/contract-addin-poc/clauses.json";
 
-  /**
-   * IMPORTANT: Use OpenXML highlight values (lowercase).
-   * These are widely supported: red, yellow, green, etc. [1](https://thelinuxcode.com/host-a-website-on-github-for-free-a-practical-modern-guide-2026/)
-   * Avoid nonstandard values like "BrightGreen" which can cause invalid-argument errors. [2](https://www.hostragons.com/en/blog/free-static-website-hosting-with-github-pages/)
-   */
+  // OpenXML highlight values (lowercase) – safest across Word on the web. [1](https://www.udacity.com/blog/2025/08/how-to-host-your-website-for-free-using-github-pages-a-step-by-step-guide.html)
   const HIGHLIGHT = {
     RED: "red",
     YELLOW: "yellow",
     GREEN: "green"
   };
 
-  // --- UI elements ---
+  // UI
   const elStatus = document.getElementById("status");
   const elStatus2 = document.getElementById("status2");
   const elSearch = document.getElementById("search");
@@ -24,13 +17,9 @@
   const btnValidate = document.getElementById("btnValidate");
   const btnReload = document.getElementById("btnReload");
 
-  // --- State ---
   let clauses = [];
   let indexBaseUrl = CLAUSE_INDEX_URL;
 
-  // ---------------------------
-  // Status helpers
-  // ---------------------------
   function set1(msg, cls) {
     if (elStatus) {
       elStatus.textContent = msg;
@@ -51,7 +40,7 @@
     const msg = e?.debugInfo?.message || e?.message || String(e);
     console.error(prefix, msg);
     console.error("Full error:", e);
-    console.error("Office debugInfo:", e?.debugInfo); // Office tells you to inspect debugInfo for invalid args [2](https://www.hostragons.com/en/blog/free-static-website-hosting-with-github-pages/)
+    console.error("Office debugInfo:", e?.debugInfo); // Office explicitly points here for invalid args [2](https://thelinuxcode.com/host-a-website-on-github-for-free-a-practical-modern-guide-2026/)
     return msg;
   }
 
@@ -61,9 +50,6 @@
     }[m]));
   }
 
-  // ---------------------------
-  // URL + fetch helpers
-  // ---------------------------
   function resolveUrl(baseUrl, maybeRelativeUrl) {
     try {
       return new URL(maybeRelativeUrl, baseUrl).toString();
@@ -98,9 +84,6 @@
     return btoa(binary);
   }
 
-  // ---------------------------
-  // Hash helpers
-  // ---------------------------
   function normalizeText(s) {
     return (s || "")
       .replace(/\r\n/g, "\n")
@@ -119,9 +102,6 @@
       .join("");
   }
 
-  // ---------------------------
-  // Data normalization
-  // ---------------------------
   function normalizeClauseRecord(r) {
     const clauseId = r.clauseId || r.id || "";
     return {
@@ -136,9 +116,6 @@
     };
   }
 
-  // ---------------------------
-  // UI rendering
-  // ---------------------------
   function renderList(filterText) {
     const q = (filterText || "").trim().toLowerCase();
     const filtered = clauses.filter(c => {
@@ -159,6 +136,7 @@
 
     filtered.forEach(c => {
       const li = document.createElement("li");
+
       const pill = c.approved
         ? `<span class="pill ok">approved</span>`
         : `<span class="pill warn">not approved</span>`;
@@ -183,9 +161,6 @@
     });
   }
 
-  // ---------------------------
-  // Load clauses
-  // ---------------------------
   async function loadClauses() {
     set1("Loading clause index…", "ok");
     set2(CLAUSE_INDEX_URL, "small");
@@ -201,14 +176,8 @@
       return c;
     });
 
-    const missing = clauses.filter(c => !c.clauseJsonUrl || !c.clauseDocxUrl);
-    if (missing.length) {
-      set1("Loaded, but some clauses are missing URLs", "warn");
-      set2("Missing URLs for: " + missing.map(m => m.clauseId || m.title).join(", "), "warn");
-    } else {
-      set1(`Loaded ${clauses.length} clauses ✅`, "ok");
-      set2("Search and click a clause to insert.", "small");
-    }
+    set1(`Loaded ${clauses.length} clauses ✅`, "ok");
+    set2("Search and click a clause to insert.", "small");
 
     elSearch.disabled = false;
     btnValidate.disabled = false;
@@ -217,59 +186,41 @@
     renderList(elSearch.value || "");
   }
 
-  // ---------------------------
-  // Insert clause (DOCX + content control tagging)
-  // ---------------------------
   async function insertClause(c) {
     if (!c.approved) {
       set1("Insertion blocked", "warn");
       set2("This clause is not approved.", "warn");
       return;
     }
-    if (!c.clauseJsonUrl || !c.clauseDocxUrl) {
-      set1("Cannot insert", "err");
-      set2("Clause record missing clauseJsonUrl or clauseDocxUrl.", "err");
-      return;
-    }
 
     try {
       set1(`Downloading metadata: ${c.clauseId}…`, "ok");
       const meta = await fetchJson(c.clauseJsonUrl);
-
       const baselineHash = (meta.baselineHash || "").trim();
-      if (!baselineHash) {
-        set1("Cannot insert", "err");
-        set2("Clause metadata missing baselineHash.", "err");
-        return;
-      }
+      if (!baselineHash) throw new Error("Clause metadata missing baselineHash.");
 
       set1(`Downloading DOCX: ${c.clauseId}…`, "ok");
       const base64Docx = await fetchBase64(c.clauseDocxUrl);
 
       set1(`Inserting: ${c.clauseId}…`, "ok");
 
-      // Word.run is the standard batching pattern for Word add-ins [6](https://learn.microsoft.com/en-us/office/dev/add-ins/testing/sideload-add-in-with-unified-manifest)[5](https://codesandbox.io/examples/package/office-addin-taskpane-js)
+      // Word.run is the standard pattern for Word add-ins. [5](https://learn.microsoft.com/en-us/office/dev/add-ins/quickstarts/excel-quickstart-jquery)[6](https://github.com/OfficeDev/office-js-docs-pr/blob/main/docs/testing/sideload-add-in-with-unified-manifest.md)
       await Word.run(async (context) => {
         const selection = context.document.getSelection();
-
-        const insertedRange = selection.insertFileFromBase64(
-          base64Docx,
-          Word.InsertLocation.replace
-        );
+        const insertedRange = selection.insertFileFromBase64(base64Docx, Word.InsertLocation.replace);
 
         const cc = insertedRange.insertContentControl();
         cc.title = `${c.title} (${c.clauseId} ${c.version})`;
         cc.tag = `APPROVED|${c.clauseId}|${c.version}|h${baselineHash}`;
         cc.appearance = "BoundingBox";
 
-        // Apply initial highlight using OpenXML highlight name (lowercase). [1](https://thelinuxcode.com/host-a-website-on-github-for-free-a-practical-modern-guide-2026/)
-        cc.getRange().font.highlightColor = HIGHLIGHT.GREEN;
-
+        // NOTE: We intentionally do NOT set highlight here.
+        // If highlight is rejected, it would fail the whole insert. Validate will colorize instead.
         await context.sync();
       });
 
       set1(`Inserted ${c.clauseId} ✅`, "ok");
-      set2("Edit inside the clause then click Validate to see Yellow.", "small");
+      set2("Now click Validate to colorize (green/yellow/red).", "small");
     } catch (e) {
       const msg = logOfficeError("Insert failed", e);
       set1("Insert failed ❌", "err");
@@ -277,16 +228,13 @@
     }
   }
 
-  // ---------------------------
-  // Validate traffic lights (two-pass: read -> hash -> write)
-  // This avoids async crypto work inside the Word batch and aligns with batching guidance. [3](https://stackoverflow.com/questions/40639456/office-addin-manifest)[4](https://learn.microsoft.com/en-us/javascript/api/manifest/appdomain?view=word-js-preview)
-  // ---------------------------
+  // Two-pass validate: read->hash->write. Better aligned with batching guidance. [3](https://github.com/keyur32/add-in-docs-new/blob/master/docs/overview/add-in-manifests.md)[4](https://deepwiki.com/OfficeDev/Office-Add-in-samples/10-manifest-configuration)
   async function validateDocument() {
     try {
       set1("Validating…", "ok");
       set2("Painting document Red, then checking content controls.", "small");
 
-      // PASS 1: Paint body red + read tags + read text from relevant content controls
+      // PASS 1: paint body red + read tag/text for TEMPLATE| and APPROVED| controls
       const snapshot = await Word.run(async (context) => {
         const bodyRange = context.document.body.getRange();
         bodyRange.font.highlightColor = HIGHLIGHT.RED;
@@ -299,34 +247,31 @@
         for (const cc of controls.items) {
           const tag = cc.tag || "";
           if (!tag.startsWith("TEMPLATE|") && !tag.startsWith("APPROVED|")) continue;
+
           const range = cc.getRange();
           range.load("text");
           temp.push({ tag, range });
         }
 
         await context.sync();
-
-        // Return plain JS (no Word objects)
         return temp.map(t => ({ tag: t.tag, text: t.range.text }));
       });
 
-      // PASS 1.5: Hash outside Word.run
+      // PASS 1.5: compute hashes outside Word.run
       const decisions = [];
       for (const item of snapshot) {
         const parts = (item.tag || "").split("|");
         const last = parts[parts.length - 1] || "";
         const expected = last.startsWith("h") ? last.slice(1) : "";
-
         const currentHash = await sha256Hex(normalizeText(item.text));
-        const ok = expected && currentHash === expected;
 
         decisions.push({
           tag: item.tag,
-          highlight: ok ? HIGHLIGHT.GREEN : HIGHLIGHT.YELLOW
+          highlight: (expected && currentHash === expected) ? HIGHLIGHT.GREEN : HIGHLIGHT.YELLOW
         });
       }
 
-      // PASS 2: Apply green/yellow highlights back in Word
+      // PASS 2: apply highlights
       await Word.run(async (context) => {
         const controls = context.document.contentControls;
         controls.load("items/tag");
@@ -354,19 +299,15 @@
     }
   }
 
-  // ---------------------------
   // Boot
-  // ---------------------------
   set1("taskpane.js loaded ✅", "ok");
 
-  // Office.js should be referenced from the Microsoft CDN for add-ins [7](https://code.visualstudio.com/docs/other/office)
   if (typeof Office === "undefined") {
     set1("Office is undefined ❌", "err");
     set2("Office.js did not load. Check Network for office.js.", "small");
     return;
   }
 
-  // Office.onReady ensures the host is initialized before calling Word APIs [5](https://codesandbox.io/examples/package/office-addin-taskpane-js)[6](https://learn.microsoft.com/en-us/office/dev/add-ins/testing/sideload-add-in-with-unified-manifest)
   Office.onReady(async (info) => {
     if (info.host !== Office.HostType.Word) {
       set1("Loaded, but not running in Word", "warn");
@@ -377,7 +318,6 @@
     set1("Running inside Word ✅", "ok");
     set2("Loading approved clauses…", "small");
 
-    // Wire UI
     elSearch.addEventListener("input", () => renderList(elSearch.value));
     btnValidate.onclick = validateDocument;
 
@@ -387,14 +327,12 @@
       finally { btnReload.disabled = false; }
     };
 
-    // Load clauses
     btnReload.disabled = true;
     try {
       await loadClauses();
     } catch (e) {
-      const msg = e?.message || String(e);
       set1("Failed to load clauses ❌", "err");
-      set2(msg, "err");
+      set2(e?.message || String(e), "err");
       console.error(e);
       btnReload.disabled = false;
     }

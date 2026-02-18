@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OfficeApp xmlns="http://schemas.microsoft.com/office/appforoffice/1.1"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xmlns:bt="http://schemas.microsoft.com/office/officeappbasictypes/1.0"
+           xmlns:ov="http://schemas.microsoft.com/office/taskpaneappversionoverrides"
+           xsi:type="TaskPaneApp">
+
+  <!-- Unique add-in identity (keep stable across versions) -->
+  <Id>757ec108-6ee8-4f14-81e1-71fa750aa0b7</Id>
+  <Version>1.0.0.1</Version>
+  <ProviderName>Contract PoC</ProviderName>
+  <DefaultLocale>en-US</DefaultLocale>
+
+  <DisplayName DefaultValue="Contract Drafting PoC"/>
+  <Description DefaultValue="PoC for clause insertion and red/yellow/green validation."/>
+
+  <!-- Icons (HTTPS) -->
+  <IconUrl DefaultValue="https://luisgomezcalaveritas-create.github.io/contract-addin-poc/icon.png"/>
+  <HighResolutionIconUrl DefaultValue="https://luisgomezcalaveritas-create.github.io/contract-addin-poc/icon.png"/>
+
+  <!-- Optional but recommended -->
+  <SupportUrl DefaultValue="https://luisgomezcalaveritas-create.github.io/contract-addin-poc/"/>
+
+  <Hosts>
+    <Host Name="Word"/>
+  </Hosts>
+
+  <!-- Trust domains used by the add-in -->
+  <AppDomains>
+    <AppDomain>https://luisgomezcalaveritas-create.github.io</AppDomain>
+  </AppDomains>
+
+  <!-- SourceLocation MUST be HTTPS -->
+  <DefaultSettings>
+    <SourceLocation DefaultValue="https://luisgomezcalaveritas-create.github.io/contract-addin-poc/taskpane.html"/>
+  </DefaultSettings>
+
+  <Permissions>ReadWriteDocument</Permissions>
+
+  <!-- Add a Home ribbon button for best demo experience -->
+  <VersionOverrides xmlns="http://schemas.microsoft.com/office/taskpaneappversionoverrides" xsi:type="VersionOverridesV1_0">
+    <Hosts>
+      <Host xsi:type="Word">
+        <DesktopFormFactor>
+          <ExtensionPoint xsi:type="PrimaryCommandSurface">
+            <OfficeTab id="TabHome">
+              <Group id="grpContracts">
+                <Label resid="grpLabel"/>
+                <Control xsi:type="Button" id="btnShowPane">
+                  <Label resid="btnLabel"/>
+                  <Supertip>
+                    <Title resid="btnLabel"/>
+                    <Description resid="btnDesc"/>
+                  </Supertip>
+                  <Icon>
+                    <bt:Image size="16" resid="icon16"/>
+                    <bt:Image size="32" resid="icon32"/>
+                    <bt:Image size="80" resid="icon80"/>
+                  </Icon>
+                  <Action xsi:type="ShowTaskpane">
+                    <TaskpaneId>ContractPane</TaskpaneId>
+                    <SourceLocation resid="taskpaneUrl"/>
+                  </Action>
+                </Control>
+              </Group>
+            </OfficeTab>
+          </ExtensionPoint>
+        </DesktopFormFactor>
+      </Host>
+    </Hosts>
+
+    <Resources>
+      <bt:Images>
+        <bt:Image id="icon16" DefaultValue="https://luisgomezcalaveritas-create.github.io/contract-addin-poc/icon.png"/>
+        <bt:Image id="icon32" DefaultValue="https://luisgomezcalaveritas-create.github.io/contract-addin-poc/icon.png"/>
+        <bt:Image id="icon80" DefaultValue="https://luisgomezcalaveritas-create.github.io/contract-addin-poc/icon.png"/>
+      </bt:Images>
+      <bt:Urls>
+        <bt:Url id="taskpaneUrl" DefaultValue="https://luisgomezcalaveritas-create.github.io/contract-addin-poc/taskpane.html"/>
+      </bt:Urls>
+      <bt:ShortStrings>
+        <bt:String id="grpLabel" DefaultValue="Contracts"/>
+        <bt:String id="btnLabel" DefaultValue="Contract PoC"/>
+      </bt:ShortStrings>
+      <bt:LongStrings>
+        <bt:String id="btnDesc" DefaultValue="Insert approved clauses and validate document."/>
+      </bt:LongStrings>
+    </Resources>
+  </VersionOverrides>
+
+</OfficeApp>

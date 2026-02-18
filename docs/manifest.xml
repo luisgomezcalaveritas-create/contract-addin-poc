@@ -14,9 +14,9 @@
   <DisplayName DefaultValue="Contract Drafting PoC"/>
   <Description DefaultValue="PoC for clause insertion and red/yellow/green validation."/>
 
-  <!-- Representative add-in icon (used in Insert > Add-ins UX and task pane tab bar) -->
-  <IconUrl DefaultValue="https://luisgomezcalaveritas-create.github.io/contract-addin-poc/icon.png?v=1.0.0.4"/>
-  <HighResolutionIconUrl DefaultValue="https://luisgomezcalaveritas-create.github.io/contract-addin-poc/icon.png?v=1.0.0.4"/>
+  <!-- Representative add-in icon -->
+  <IconUrl DefaultValue="https://luisgomezcalaveritas-create.github.io/contract-addin-poc/icon-v104.png?v=1.0.0.4"/>
+  <HighResolutionIconUrl DefaultValue="https://luisgomezcalaveritas-create.github.io/contract-addin-poc/icon-v104.png?v=1.0.0.4"/>
   <SupportUrl DefaultValue="https://luisgomezcalaveritas-create.github.io/contract-addin-poc/"/>
 
   <Hosts>
@@ -49,7 +49,7 @@
                     <Description resid="btnDesc"/>
                   </Supertip>
 
-                  <!-- Correct: reference image resources by resid + size -->
+                  <!-- Correct add-in command icon wiring -->
                   <Icon>
                     <bt:Image size="16" resid="icon16"/>
                     <bt:Image size="32" resid="icon32"/>
@@ -69,11 +69,10 @@
     </Hosts>
 
     <Resources>
-      <!-- Correct: define image URLs here -->
       <bt:Images>
-        <bt:Image id="icon16" DefaultValue="https://luisgomezcalaveritas-create.github.io/contract-addin-poc/icon.png?v=1.0.0.4"/>
-        <bt:Image id="icon32" DefaultValue="https://luisgomezcalaveritas-create.github.io/contract-addin-poc/icon.png?v=1.0.0.4"/>
-        <bt:Image id="icon80" DefaultValue="https://luisgomezcalaveritas-create.github.io/contract-addin-poc/icon.png?v=1.0.0.4"/>
+        <bt:Image id="icon16" DefaultValue="https://luisgomezcalaveritas-create.github.io/contract-addin-poc/icon-v104.png?v=1.0.0.4"/>
+        <bt:Image id="icon32" DefaultValue="https://luisgomezcalaveritas-create.github.io/contract-addin-poc/icon-v104.png?v=1.0.0.4"/>
+        <bt:Image id="icon80" DefaultValue="https://luisgomezcalaveritas-create.github.io/contract-addin-poc/icon-v104.png?v=1.0.0.4"/>
       </bt:Images>
 
       <bt:Urls>

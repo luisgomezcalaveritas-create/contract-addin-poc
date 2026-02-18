@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Contract Drafting PoC</title>
 
-  <!-- Office.js from Microsoft CDN (supported approach) -->
+  <!-- Office.js from Microsoft CDN -->
   <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
 
   <style>
@@ -50,7 +50,7 @@
     <div id="status2" class="small"></div>
   </div>
 
-  <label for="search">Search clauses in the legal playbook</label>
+  <label for="search">Search approved clauses</label>
   <input id="search" type="text"
          placeholder="Search by title, id, tags… (e.g., nda, risk, term, payment)"
          disabled />
@@ -67,7 +67,7 @@
     Green = unchanged, Yellow = edited, Red = outside approved blocks.
   </div>
 
-  <!-- IMPORTANT: bump v= when you deploy changes to avoid cached JS -->
-  <script src="./taskpane.js?v=20260218-7"></script>
-  </body>
+  <!-- Bump v= whenever you publish changes (Word web caches aggressively) -->
+  <script src="./taskpane.js?v=1"></script>
+</body>
 </html>

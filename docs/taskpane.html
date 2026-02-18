@@ -1,19 +1,54 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Contract Drafting PoC</title>
 
-  <!-- Office.js is required for Word add-ins -->
-  <script src="httpsice.microsoft.com/lib/1/hosted/office.js</script>
+  <!-- Office.js is required inside Word -->
+  https://appsforoffice.microsoft.com/lib/1/hosted/office.js</script>
+
+  <style>
+    body { font-family: Arial, sans-serif; margin: 12px; }
+    .banner { padding: 10px; border-radius: 6px; background: #f4f4f4; margin-bottom: 12px; }
+    .row { margin: 10px 0; }
+    label { display:block; font-size: 12px; color:#444; margin-bottom: 4px; }
+    select, button { width: 100%; padding: 10px; font-size: 14px; }
+    button { cursor: pointer; }
+    .btn { margin-top: 8px; }
+    .small { font-size: 12px; color:#666; }
+    .ok { color: #0b6a0b; font-weight: 600; }
+    .warn { color: #9a6b00; font-weight: 600; }
+    .err { color: #b00020; font-weight: 600; }
+    hr { border: none; border-top: 1px solid #e5e5e5; margin: 12px 0; }
+  </style>
 </head>
 
 <body>
-  <h3>Contract Drafting PoC</h3>
+  <div class="banner">
+    <div id="status" class="small">Loading…</div>
+    <div id="status2" class="small"></div>
+  </div>
 
-  <button id="validate">Validate</button>
+  <div class="row">
+    <label for="clauseSelect">Approved clause</label>
+    <select id="clauseSelect">
+      <option value="">(Load clauses first)</option>
+    </select>
+    <button class="btn" id="btnLoad">Load clauses</button>
+    <button class="btn" id="btnInsert">Insert selected clause</button>
+  </div>
 
-  <div id="status" style="margin-top:10px;color:#444;"></div>
+  <hr />
+
+  <div class="row">
+    <button id="btnValidate">Validate (Red / Yellow / Green)</button>
+    <div class="small" style="margin-top:8px;">
+      • Red = custom (outside standard blocks)<br />
+      • Green = standard unchanged<br />
+      • Yellow = standard edited
+    </div>
+  </div>
 
   ./taskpane.js</script>
 </body>

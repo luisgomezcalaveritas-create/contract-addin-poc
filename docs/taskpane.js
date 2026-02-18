@@ -13,7 +13,7 @@
   const HIGHLIGHT = {
     RED: "Red",
     YELLOW: "Yellow",
-    GREEN: "BrightGreen"
+    GREEN: "Green"
   };
 
   // --- UI elements ---

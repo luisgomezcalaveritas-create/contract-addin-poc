@@ -1,5 +1,12 @@
 [
   {
+    "clauseId": "CONF",
+    "version": "1",
+    "title": "Confidentiality",
+    "metaFile": "CONF_v1.json",
+    "docxFile": "CONF_v1.docx"
+  },
+  {
     "clauseId": "LOL",
     "version": "1",
     "title": "Limitation of Liability",
@@ -7,10 +14,24 @@
     "docxFile": "LOL_v1.docx"
   },
   {
-    "clauseId": "CONF",
+    "clauseId": "PAY",
     "version": "1",
-    "title": "Confidentiality",
-    "metaFile": "CONF_v1.json",
-    "docxFile": "CONF_v1.docx"
+    "title": "Payment Terms",
+    "metaFile": "PAY_v1.json",
+    "docxFile": "PAY_v1.docx"
+  },
+  {
+    "clauseId": "TERM",
+    "version": "1",
+    "title": "Term and Renewal",
+    "metaFile": "TERM_v1.json",
+    "docxFile": "TERM_v1.docx"
+  },
+  {
+    "clauseId": "TERMNT",
+    "version": "1",
+    "title": "Termination",
+    "metaFile": "TERMNT_v1.json",
+    "docxFile": "TERMNT_v1.docx"
   }
 ]

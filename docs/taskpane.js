@@ -1,9 +1,3 @@
-
-console.log("TASKPANE JS LOADED ✅");
-document.body.insertAdjacentHTML(
-  "afterbegin",
-  "<div style='padding:8px;background:#dff0d8;border-radius:6px;margin-bottom:10px;'>JS is running ✅</div>"
-);
 (function () {
   const status = document.getElementById("status");
   const status2 = document.getElementById("status2");

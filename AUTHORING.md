@@ -1,102 +1,44 @@
 # AUTHORING (Template Content Controls + Baseline Hashes)
 
-This guide is for template authors who maintain **SalesContractTemplate_PoC.docx** or any future template.
+This guide is for template authors maintaining **SalesContractTemplate_PoC.docx**.
 
-Content controls are a strong fit for templates because they can be labeled (Title/Tag), bounded, and optionally restricted from deletion/editing. citeturn26search84turn26search79
+## 1) Content controls and tags
 
----
+Template blocks are stored as Word content controls and tagged:
 
-## 1) Enable Developer tab (Word Desktop)
+- `TEMPLATE|HD|<Name>|h<hash>`
+- `TEMPLATE|TB|<Name>|h<hash>`
+- `TEMPLATE|BP|<Name>|h<hash>`
 
-1. Word **File → Options**
-2. **Customize Ribbon**
-3. Check **Developer**
-4. OK citeturn26search78turn26search81
+Only blocks with `TEMPLATE|` or `APPROVED|` are treated as “standard” by the add-in.
 
-> Word on the web may not expose all content control property editing. Use Word Desktop for authoring. citeturn26search78turn26search81
+## 2) Authoring workflow (required)
 
----
+Whenever you change text inside any TEMPLATE content control:
 
-## 2) Select the correct content control
+1) Edit the content
+2) Recompute baseline hash (using the same normalization as the add-in)
+3) Update the content control **Tag** to end with `|h<newhash>`
+4) Save the template
 
-**Tip:** Turn on **Developer → Design Mode** to make selection easier. citeturn26search81turn26search84
+If you skip step (3), Validate will treat the block as changed.
 
-1. Click inside the target block (heading/paragraph/table).
-2. If needed, enable **Design Mode**.
-3. Click the control boundary so the entire control is selected.
+## 3) Word Desktop steps (recommended)
 
----
+Use Word Desktop for content control property editing:
 
-## 3) Open Properties and set Title/Tag
+- Enable Developer tab
+- Select content control → Developer → Properties
+- Update Title + Tag
+- (Optional) Lock: prevent deletion
 
-1. With the control selected: **Developer → Properties** citeturn26search78turn26search81
-2. Update:
+## 4) Negotiated Clauses section
 
-### Title (human-friendly)
-Examples:
-- `GoverningLaw`
-- `Notices`
-- `Pricing`
+Two approaches:
 
-### Tag (machine-readable)
-Use the schema:
+- Wrap instructions in a TEMPLATE BP control (so it can validate Green)
+- Leave outside any control (so it remains Red)
 
-- `TEMPLATE|HD|<Name>|h<64-hex>`
-- `TEMPLATE|TB|<Name>|h<64-hex>`
-- `TEMPLATE|BP|<Name>|h<64-hex>`
+## 5) Re-baselining after large edits
 
-Example:
-
-```
-TEMPLATE|BP|GoverningLaw|h0123...abcd   (64 hex total)
-```
-
-### Optional settings in Properties
-- **Show as**: choose **Bounding box** for easy PoC visualization. citeturn26search84
-- **Locking**:
-  - ✅ Content control cannot be deleted
-  - (optional) ✅ Contents cannot be edited (strict governance) citeturn26search79turn26search86
-
-Click **OK**, then **Save**.
-
----
-
-## 4) Recompute baseline hash after editing template text
-
-Whenever you change text inside a TEMPLATE block, update the hash in the tag.
-
-### Recommended PoC approach: compute hash with the add-in
-Add an **Authoring** button in the task pane:
-- **Compute hash for selected Content Control**
-
-Workflow:
-1. Edit the text in the content control.
-2. Click inside that same content control.
-3. Click **Compute hash**.
-4. Copy the new hash (64 hex).
-5. Open **Developer → Properties** and replace the trailing `h<oldhash>` with `h<newhash>`.
-6. Save the template.
-
----
-
-## 5) Updating the “NEGOTIATED CLAUSES” section
-
-Two patterns:
-
-### Option A (recommended for demos)
-Wrap the instruction paragraph in a TEMPLATE boilerplate control so it validates **Green** when unchanged:
-
-- Title: `NegotiatedClausesInstruction`
-- Tag: `TEMPLATE|BP|NegotiatedClausesInstruction|h<hash>`
-
-### Option B (strict)
-Leave the instruction paragraph outside any content control so it remains **Red**.
-
----
-
-## 6) Quick verification
-
-1. Open template in Word.
-2. Run **Validate**.
-3. Unchanged TEMPLATE blocks should be **Green**.
-4. Edited TEMPLATE blocks should be **Yellow** until you update their hash.
+If you change many template blocks, recompute hashes for all edited controls and update their Tags.

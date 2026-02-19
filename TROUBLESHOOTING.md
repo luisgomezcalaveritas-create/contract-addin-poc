@@ -1,49 +1,47 @@
 # TROUBLESHOOTING
 
-This file covers common PoC issues in **Word on the web**.
+## 1) Office.js did not load (Office is undefined)
 
----
+Symptoms:
+- Task pane shows: “Office.js did not load. Check Network for office.js.”
 
-## 1) RichApi.Error: “The argument you provided is not valid”
+Checks:
+- Confirm `https://appsforoffice.microsoft.com/lib/1/hosted/office.js` is reachable.
+- Verify Office.js is referenced in `<head>`.
+- In Word web DevTools, inspect the **task pane iframe** (not the top frame) and check Network.
 
-Most often caused by invalid highlight colors (or other invalid property values). Word highlight colors are constrained; use standard **OpenXML highlight names** (lowercase) such as `red`, `yellow`, `green`. citeturn20search69turn20search70
+Fixes:
+- Try InPrivate window (extensions off).
+- Allowlist Microsoft Office.js CDN in corporate networks if blocked.
 
-**Fix:**
-- Ensure your code uses: `red`, `yellow`, `green`
-- Log debug info: `console.error(e, e.debugInfo)` citeturn20search70
+## 2) Word on the web caching (changes not showing)
 
----
+Fix:
+- Bump `window.BUILD_VERSION` in `docs/taskpane.html`.
+- Match `taskpane.html?v=...` in `manifest.xml`.
+- Close Word tab fully and reopen.
 
-## 2) Template blocks stay Yellow after editing
+## 3) Validate error: “Cannot read properties of null (reading 'clone')”
 
-If you edit text inside a TEMPLATE content control, the baseline hash in the tag must be recomputed and updated.
+Cause:
+- Word on the web can throw internal errors when calling `range.getTrackedChanges()` across multiple ranges.
 
-See **AUTHORING.md**.
+Fix:
+- Use `contentControl.getTrackedChanges()` for tracked changes retrieval.
 
----
+## 4) Insert failed: ooxmlIsMalformated
 
-## 3) Word on the web caching (changes not showing)
+Cause:
+- Base64 doc is not a real DOCX or contains unsupported content.
 
-If you change `taskpane.js` but Word still runs an older version:
+Fix:
+- Confirm the DOCX URL serves a real DOCX (not a GitHub blob page or LFS pointer).
+- Re-export the snippet as a clean DOCX if needed.
 
-```html
-<script src="./taskpane.js?v=YYYYMMDD-N" defer></script>
-```
+## 5) Reset clears user highlights too
 
-Then reload the Word tab or close/open the document.
+Current PoC behavior:
+- Reset clears all highlights in the document.
 
----
-
-## 4) “SourceLocation must be HTTPS” / add-in won’t load
-
-Office add-in SourceLocation must be HTTPS. citeturn3search1
-
-GitHub Pages is HTTPS; confirm your manifest points to:
-
-- `https://luisgomezcalaveritas-create.github.io/contract-addin-poc/taskpane.html` citeturn3search7turn3search1
-
----
-
-## 5) Content control properties not editable
-
-Word on the web may not provide the full content control Properties UI; author templates in Word Desktop. citeturn26search78turn26search81
+If you need to preserve user highlights:
+- Implement an “add-in-only highlight tagging” strategy (future enhancement).

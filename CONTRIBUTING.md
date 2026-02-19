@@ -2,40 +2,28 @@
 
 Thanks for contributing to the Contract Drafting PoC.
 
----
-
 ## 1) Branching model
 
-- `main` — stable demo-ready branch
-- feature branches — `feature/<short-name>`
-  - examples: `feature/hash-button`, `feature/template-authoring-ui`
+- `main` — demo-ready
+- `feature/<name>` — feature work
 
----
+## 2) PR checklist
 
-## 2) Pull request checklist
+- [ ] `manifest.xml` version bumped (a.b.c.d) when behavior changes.
+- [ ] `docs/taskpane.html` `window.BUILD_VERSION` bumped.
+- [ ] `manifest.xml` `taskpane.html?v=...` query matches build version.
+- [ ] Insert tested (at least one clause inserts correctly).
+- [ ] Validate tested (Red/Green + Yellow insertions overlay).
+- [ ] Reset tested (clears highlights).
+- [ ] No blocking console errors.
 
-Before you open a PR:
+## 3) Coding standards (Office.js)
 
-- [ ] `taskpane.html` script query string bumped (e.g., `taskpane.js?v=YYYYMMDD-N`) to avoid Word web caching issues.
-- [ ] `clauses.json` validated (JSON syntax + URLs resolve correctly).
-- [ ] Insert flow tested: at least one clause inserts successfully.
-- [ ] Validate flow tested: TEMPLATE + APPROVED controls colorize correctly.
-- [ ] Console clean of **RichApi.Error** (warnings from Word web telemetry can be ignored).
+- Use `Office.onReady` before Word APIs.
+- Use `Word.run` batching and avoid extra `context.sync()` in tight loops.
+- Log `error.debugInfo` on failures; it usually identifies invalid statements.
 
----
-
-## 3) Coding standards
-
-- Use `Office.onReady` before any Word APIs.
-- Use `Word.run` batching for document changes. citeturn10search47turn20search74
-- Avoid `context.sync()` inside loops; use split-loop/correlated patterns for performance. citeturn20search61turn20search63
-- Log Office errors with `e.debugInfo` when available; it often identifies invalid arguments. citeturn20search70
-
----
-
-## 4) Release / Demo tagging
+## 4) Release tags
 
 Use Git tags for demo milestones:
 - `demo-YYYY-MM-DD`
-
-Optionally keep a `CHANGELOG.md` once iteration speeds up.

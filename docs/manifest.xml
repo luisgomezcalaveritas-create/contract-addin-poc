@@ -5,18 +5,21 @@
            xmlns:ov="http://schemas.microsoft.com/office/taskpaneappversionoverrides"
            xsi:type="TaskPaneApp">
 
+  <!-- Keep stable across releases -->
   <Id>c8b1e9b1-7a7b-4c22-9b6f-111111111111</Id>
-  <Version>1.0.0.6</Version>
+
+  <!-- BUILD VERSION (keep consistent with taskpane.html window.BUILD_VERSION) -->
+  <Version>1.0.0.7</Version>
 
   <ProviderName>Contract PoC</ProviderName>
   <DefaultLocale>en-US</DefaultLocale>
 
-  <DisplayName DefaultValue="Contract Drafting PoC"/>
-  <Description DefaultValue="PoC for clause insertion and red/yellow/green validation."/>
+  <DisplayName DefaultValue="Word Add-in PoC"/>
+  <Description DefaultValue="PoC for clause insertion + validation with Track Changes overlay."/>
 
-  <!-- Representative add-in icon -->
-  <IconUrl DefaultValue="https://luisgomezcalaveritas-create.github.io/contract-addin-poc/icon-v104.png?v=1.0.0.4"/>
-  <HighResolutionIconUrl DefaultValue="https://luisgomezcalaveritas-create.github.io/contract-addin-poc/icon-v104.png?v=1.0.0.4"/>
+  <!-- Icons (use your new filename to avoid cached icons) -->
+  <IconUrl DefaultValue="https://luisgomezcalaveritas-create.github.io/contract-addin-poc/icon-v104.png"/>
+  <HighResolutionIconUrl DefaultValue="https://luisgomezcalaveritas-create.github.io/contract-addin-poc/icon-v104.png"/>
   <SupportUrl DefaultValue="https://luisgomezcalaveritas-create.github.io/contract-addin-poc/"/>
 
   <Hosts>
@@ -27,12 +30,14 @@
     <AppDomain>https://luisgomezcalaveritas-create.github.io</AppDomain>
   </AppDomains>
 
+  <!-- SourceLocation MUST be HTTPS; keep build version in query to reduce stale loads -->
   <DefaultSettings>
     <SourceLocation DefaultValue="https://luisgomezcalaveritas-create.github.io/contract-addin-poc/taskpane.html?v=1.0.0.4"/>
   </DefaultSettings>
 
   <Permissions>ReadWriteDocument</Permissions>
 
+  <!-- Ribbon button -->
   <VersionOverrides xmlns="http://schemas.microsoft.com/office/taskpaneappversionoverrides"
                     xsi:type="VersionOverridesV1_0">
     <Hosts>
@@ -42,6 +47,7 @@
             <OfficeTab id="TabHome">
               <Group id="grpContracts">
                 <Label resid="grpLabel"/>
+
                 <Control xsi:type="Button" id="btnShowPane">
                   <Label resid="btnLabel"/>
                   <Supertip>
@@ -49,7 +55,7 @@
                     <Description resid="btnDesc"/>
                   </Supertip>
 
-                  <!-- Correct add-in command icon wiring -->
+                  <!-- Correct icon wiring: size + resid -->
                   <Icon>
                     <bt:Image size="16" resid="icon16"/>
                     <bt:Image size="32" resid="icon32"/>
@@ -61,6 +67,7 @@
                     <SourceLocation resid="taskpaneUrl"/>
                   </Action>
                 </Control>
+
               </Group>
             </OfficeTab>
           </ExtensionPoint>
@@ -69,13 +76,15 @@
     </Hosts>
 
     <Resources>
+      <!-- Define image URLs once; Office may cache icons, so using a new filename helps. -->
       <bt:Images>
-        <bt:Image id="icon16" DefaultValue="https://luisgomezcalaveritas-create.github.io/contract-addin-poc/icon-v104.png?v=1.0.0.4"/>
-        <bt:Image id="icon32" DefaultValue="https://luisgomezcalaveritas-create.github.io/contract-addin-poc/icon-v104.png?v=1.0.0.4"/>
-        <bt:Image id="icon80" DefaultValue="https://luisgomezcalaveritas-create.github.io/contract-addin-poc/icon-v104.png?v=1.0.0.4"/>
+        <bt:Image id="icon16" DefaultValue="https://luisgomezcalaveritas-create.github.io/contract-addin-poc/icon-v104.png"/>
+        <bt:Image id="icon32" DefaultValue="https://luisgomezcalaveritas-create.github.io/contract-addin-poc/icon-v104.png"/>
+        <bt:Image id="icon80" DefaultValue="https://luisgomezcalaveritas-create.github.io/contract-addin-poc/icon-v104.png"/>
       </bt:Images>
 
       <bt:Urls>
+        <!-- Keep consistent with DefaultSettings SourceLocation -->
         <bt:Url id="taskpaneUrl" DefaultValue="https://luisgomezcalaveritas-create.github.io/contract-addin-poc/taskpane.html?v=1.0.0.4"/>
       </bt:Urls>
 
@@ -85,7 +94,7 @@
       </bt:ShortStrings>
 
       <bt:LongStrings>
-        <bt:String id="btnDesc" DefaultValue="Insert approved clauses and validate document."/>
+        <bt:String id="btnDesc" DefaultValue="Insert approved clauses and validate using Track Changes overlay."/>
       </bt:LongStrings>
     </Resources>
   </VersionOverrides>
